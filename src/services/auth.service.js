@@ -2,9 +2,8 @@ import axios from"axios";
 
 const API_URL = "http://localhost:9090/api/";
 
-class AuthService {
-    login(username, password) {
-        const params = new URLSearchParams();
+const login = (username, password) => {
+    const params = new URLSearchParams();
         params.append("username", username);
         params.append("password", password)
         return axios
@@ -19,37 +18,44 @@ class AuthService {
                 }
                 return response.data;
             });
-    }
+};
 
-    logout() {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("is_admin");
-    }
+const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("is_admin");
+};
 
-    register(username, password) {
-        const params = new URLSearchParams();
-        params.append("username", username);
-        params.append("password", password);
-        return axios
-            .post(API_URL + "user/", params)
-            .then(response => {
-                console.log(response.data)
-                return response.data;
-            });
-    }
+const register = (username, password) => {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+    return axios
+        .post(API_URL + "user/", params)
+        .then(response => {
+            console.log(response.data)
+            return response.data;
+        });
+};
 
-    getCurrentUser() {
-        return localStorage.getItem("username");
-    }
+const getCurrentUser = () => {
+    return localStorage.getItem("username");
+};
 
-    isAdmin() {
-        if (localStorage.getItem("is_admim"))
-            return true;
-        else
-            return false;
-    }
+const isAdmin = () => {
+    if (localStorage.getItem("is_admim"))
+        return true;
+    else
+        return false;
+};
+
+const AuthService = {
+    login,
+    logout,
+    register,
+    getCurrentUser,
+    isAdmin
 }
 
-export default new AuthService();
+export default AuthService;
