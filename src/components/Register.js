@@ -1,10 +1,13 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
 
 import AuthService from "../services/auth.service";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./Register.css";
 
 const required = (value) => {
     if (!value) {
@@ -84,66 +87,87 @@ const Register = () => {
     }
 
     return (
-        <div className="col-md-12">
-            <div className="card card-container">
-                <img
-                    src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                    alt="profile-img"
-                    className="profile-img-card"
-                />
+        <>
+            <nav className="navbar navbar-expand navbar-dark bg-dark">
+                    <Link to={"/"} className="navbar-brand">
+                        Protrack
+                    </Link>
 
-                <Form onSubmit={handleRegister} ref={form}>
-                    {!successful && (
-                        <div>
-                            <div className="form-group">
-                                <label htmlFor="username">Username</label>
-                                <Input
-                                    type="text"
-                                    className="form-control"
-                                    name="username"
-                                    value={username}
-                                    onChange={onChangeUsername}
-                                    validations={[required, fusername]}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="password">Password</label>
-                                <Input
-                                    type="password"
-                                    className="form-control"
-                                    name="password"
-                                    value={password}
-                                    onChange={onChangePassword}
-                                    validations={[required, fpassword]}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <button className="btn btn-primary btn-block">Register</button>
-                            </div>
+                    <div className="navbar-nav ms-auto">
+                        <div className="navbar-nav ms-auto">
+                        <li className="nav-item">
+                            <Link to={"/login"} className="nav-link">
+                            Login
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                        <Link to={"/register"} className="nav-link">
+                            Register
+                            </Link>
+                        </li>
                         </div>
-                    )}
+                    </div>
+            </nav>
+            <div className="col-md-12">
+                <div className="card card-container">
+                    <img
+                        src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                        alt="profile-img"
+                        className="profile-img-card"
+                    />
+                    <Form onSubmit={handleRegister} ref={form}>
+                        {!successful && (
+                            <>
+                                <div className="form-group">
+                                    <label htmlFor="username">Username</label>
+                                    <Input
+                                        type="text"
+                                        className="form-control"
+                                        name="username"
+                                        value={username}
+                                        onChange={onChangeUsername}
+                                        validations={[required, fusername]}
+                                    />
+                                </div>
 
-                    {message && (
-                        <div className="form-group">
-                            <div
-                                className={
-                                    successful
-                                    ? "alert alert-success"
-                                    : "alert alert-danger"
-                                }
-                                role="alert"
-                            >
-                                {message}
+                                <div className="form-group">
+                                    <label htmlFor="password">Password</label>
+                                    <Input
+                                        type="password"
+                                        className="form-control"
+                                        name="password"
+                                        value={password}
+                                        onChange={onChangePassword}
+                                        validations={[required, fpassword]}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <button className="btn btn-primary btn-block">Register</button>
+                                </div>
+                            </>
+                        )}
+
+                        {message && (
+                            <div className="form-group">
+                                <div
+                                    className={
+                                        successful
+                                        ? "alert alert-success"
+                                        : "alert alert-danger"
+                                    }
+                                    role="alert"
+                                >
+                                    {message}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <CheckButton style={{display: "none"}} ref={checkBtn} />
-                </Form>
+                        <CheckButton style={{display: "none"}} ref={checkBtn} />
+                    </Form>
+                </div>
             </div>
-        </div>
+        </>
     )
 
 }
