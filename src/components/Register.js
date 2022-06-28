@@ -115,7 +115,7 @@ const Register = () => {
                         alt="profile-img"
                         className="profile-img-card"
                     />
-                    <Form onSubmit={handleRegister} ref={form}>
+                    <Form className="form-register"onSubmit={handleRegister} ref={form}>
                         {!successful && (
                             <>
                                 <div className="form-group">
@@ -143,7 +143,7 @@ const Register = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <button className="btn btn-primary btn-block">Register</button>
+                                    <button className="btn-register btn-primary btn-block">Register</button>
                                 </div>
                             </>
                         )}

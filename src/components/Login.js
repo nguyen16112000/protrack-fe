@@ -101,7 +101,7 @@ const Login = () => {
                         className="profile-img-card"
                     />
 
-                    <Form onSubmit={handleLogin} ref={form}>
+                    <Form className="form-login" onSubmit={handleLogin} ref={form}>
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
                             <Input
@@ -128,7 +128,7 @@ const Login = () => {
 
                         <div className="form-group">
                             <button 
-                                className="btn btn-primary btn-block"
+                                className="btn-login btn-primary btn-block"
                                 disabled={loading}
                             >
                                 {loading && (

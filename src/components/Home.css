@@ -2,74 +2,95 @@ body {
     font-size: 16px;
     font-family:'Courier New', Courier, monospace;
     background: linear-gradient(to right, #23074d, #cc5333);
+    background-color: white;
     margin-bottom: 30px;
     color: white;
 }
 
-.navbar{
-    height: 50px;
-    background-color: #272d40;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    color: white;
-}
-.nav-link:hover {
-    color: coral;
+label {
+    color: black;
+    margin-top: 10px;
 }
 
+
 .navbar-brand {
-    color: turquoise;
     cursor: pointer;
 }
 
-.nav-item{
-    color: turquoise;
+.lnavbar {
+    position: relative;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
-.nav-link {
-    color: turquoise;
+.rnavbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
-.container1 {
+.nav-item {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    width: 20%;
+    align-items: center;
+    justify-content: center;
+    padding-left: 5px;
 }
-.container2 {
+
+button:hover {
+    box-shadow: rgba(80, 63, 205, 0.5) 0 1px 30px;
+    transition-duration: .1s;
+  }
+
+.actions-wrapper {
     display: flex;
-    flex-direction: column;
-    width: 80%;
+    height: calc(100vh - 90px);
+}
+
+.container {
+    flex: auto;
+    overflow-x: auto;
+    position: relative;
+    height: 100%;
+}
+
+.lcontainer {
+    background-color: white;
+    color: black;
+    flex-basis: 20%;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+.rcontainer {
+    padding-left: 0.5vw;
+}
+
+.rcontainer.active {
+    filter: blur(20px);
+    pointer-events: none;
+    user-select: none;
 }
 
 .container-header {
     display: flex;
-    flex-basis: 0px;
-    flex-shrink: 1;
-    flex-grow: 1;
     align-items: center;
-    justify-content: flex-end;
-    text-align: center;
-    font-size: larger;
+    justify-content: space-around;
+    color: turquoise;
+    font-size: 2.5vw;
 }
 
-.container-header-placeholder {
+.projects {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
-.plusImg {
-    width: 20px;
-    height: 20px;
-}
-
-.button {
+.project {
     overflow: hidden;
     text-overflow: ellipsis;
-    /* background-image: linear-gradient(92.88deg, #455EB5 9.16%, #5643CC 43.89%, #673FD7 64.72%);
+    white-space: nowrap;
+    background-image: linear-gradient(92.88deg, #455EB5 9.16%, #5643CC 43.89%, #673FD7 64.72%);
     border-radius: 5px;
     border-style: none;
     box-sizing: border-box;
@@ -80,71 +101,165 @@ body {
     font-size: 16px;
     font-weight: 500;
     height: 4rem;
-    padding: 0 1.6rem;
-    text-align: center;
+    margin-top: 5px;
+    text-align: left;
     text-shadow: rgba(0, 0, 0, 0.25) 0 3px 8px;
     transition: all .5s;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: manipulation; */
-}
-
-.button:hover {
-    box-shadow: rgba(80, 63, 205, 0.5) 0 1px 30px;
-    transition-duration: .1s;
-  }
-
-.actions-wrapper {
-    display: flex;
-}
-
-.rnavbar {
-    right: 0px;
-    display: flex;
-    flex-direction: column;
-}
-
-.notiIcon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notifications {
-    position: absolute;
-    top: 50px;
-    display: flex;
-    flex-direction: column;
-    background-color: dimgray;
-    width: 150px;
-}
-
-.notiImg{
-    width: 20px;
-    height: 20px;
+    touch-action: manipulation;
 }
 
 .counter{
-    width: 5px;
-    height: 5px;
+    width: 15px;
+    height: 15px;
     background-color: red;
     border-radius: 50%;
-    padding: 5px;
-    font-size: 8px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 5px;
+    top: 0px;
     right: 0px;
+}
+
+.notifications {
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .notification {
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
 }
 
+.plusImg {
+    width: 2.5vw;
+    height: 2.5vw;
+    cursor: pointer;
+    position: relative;
+}
 
+.notiImg{
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
 
+.project-content {
+    color: black;
+    height: 100%;
+}
+
+.project-calendar {
+    height: 100%;
+}
+
+.calendar-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-top: 2px solid black;
+    border-left: 2px solid black;
+    border-right: 2px solid black;
+}
+
+.calendar-grid {
+    display: grid;
+    overflow-x: scroll;
+    grid-template-columns: 50% auto;
+    grid-template-rows: 20% auto;
+    height: 100%;
+}   
+
+.work-title-header {
+    grid-column: 1;
+    grid-row: 1;
+    border: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: turquoise;
+    color: white;
+}
+
+.work-titles {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: azure;
+}
+
+.work-title {
+    border: none;
+    border-left: 2px solid black;
+    border-right: 2px solid black;
+    border-bottom: 2px solid black;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;        
+    white-space: nowrap;
+}
+
+.calendar-headers {
+    display: flex;
+    flex-direction: row;
+    grid-column: 2;
+    grid-row: 1;
+    border-top: 2px solid black;
+    color: black; 
+}
+
+.calendar-header {
+    width: 100%;
+}
+
+.calendar-date-header {
+    border-bottom: 2px solid black;
+    border-right: 2px solid black;
+    text-align: center;
+    height: 50%;
+}
+
+.calendar-day-header {
+    border-right: 2px solid black;
+    border-bottom: 2px solid black;
+    text-align: center;
+    height: 50%;
+}
+
+.work-days {
+    display: grid;
+    width: 125vw;
+}
+
+.form-work-edit {
+    position: absolute;
+    top: 20vh;
+    left: 30vw;
+    right: 10vw;
+    color: black;
+    background: #455EB5;
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.5s;
+}
+
+.form-work-edit.active {
+    visibility: visible;
+    opacity: 1;
+    transition: 0.5s;
+}

@@ -7,6 +7,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
 import Admin from "./components/Admin";
+import CreateProject from "./components/CreateProject";
 
 const App = () => {
 
@@ -18,6 +19,7 @@ const App = () => {
           <Route exact path="/login" element={<Login />} />
           <Route exact path="/register" element={<Register />} />
           <Route exact path="/admin" element={<Admin />} />
+          <Route exact path="/create" element={<CreateProject />} />
         </Routes>
       </div>
   )
