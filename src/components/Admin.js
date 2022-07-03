@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import UserService from "../services/user.service";
 import AuthService from "../services/auth.service";
 
-import Notification from "../notification.png"
+import Notification from "../notification2.png"
 
 
 const Admin = () => {
@@ -53,7 +53,8 @@ const Admin = () => {
                             await getData(username);
                         }
                         else {
-                            navigate("/login")
+                            localStorage.removeItem("username");
+                            navigate("/login");
                         }
                     }
                     refresh();

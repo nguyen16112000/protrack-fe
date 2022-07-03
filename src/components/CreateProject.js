@@ -9,7 +9,7 @@ import Input from "react-validation/build/input"
 import Select from 'react-select';
 import CheckButton from "react-validation/build/button"
 
-import Notification from "../notification.png"
+import Notification from "../notification2.png"
 
 import { format } from 'date-fns';
 
@@ -25,7 +25,7 @@ const CreateProject = () => {
 
     const [formState, setFormState] = useState(false);
     const [projectName, setProjectName] = useState("");
-    const [projectDate, setProjectDate] = useState(Date.now())
+    const [projectDate, setProjectDate] = useState(null)
     const [workName, setWorkName] = useState("");
     const [workTime, setWorkTime] = useState("1");
     const [works, setWorks] = useState([]);
@@ -35,6 +35,8 @@ const CreateProject = () => {
     const [isEmptyWorks, setIsEmptyWorks] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+
+    const input_workName = useRef();
     const checkBtn = useRef();
 
     const navigate = useNavigate();
@@ -109,14 +111,20 @@ const CreateProject = () => {
     const addWork = (e) => {
         e.preventDefault();
         let new_works = works;
+        let new_worksTime = worksWithTime;
         if (workName !== "") {
             new_works.push(workName);
-            worksWithTime.push({[workName]: workTime})
+            new_worksTime.push({[workName]: workTime})
             setWorkName("");
             setWorkTime("1");
-            setWorks(new_works);
+            if (input_workName.current)
+                console.log(input_workName);
+                input_workName.current.focus()
+            // setWorks(new_works);
+            // setWorksWithTime(new_worksTime);
         }
         else {
+            // createNotification("error", "Please enter work name!!!")
             alert("Please enter work name!!!")
         }
     }
@@ -124,6 +132,7 @@ const CreateProject = () => {
     const removeWork = (e) => {
         e.preventDefault();
         const target = e.target.parentElement.parentElement.getAttribute("value");
+        
         let new_works = works; 
         let new_worksTime = worksWithTime;
         const foundId = new_worksTime.findIndex((item) => Object.keys(item)[0] === target);
@@ -148,7 +157,7 @@ const CreateProject = () => {
                     let workWithID = {value: index+1, label: index+1};
                     let new_worksWithID = worksWithID;
                     new_worksWithID.push(workWithID);
-                    setWorksWithID(new_worksWithID);
+                    // setWorksWithID(new_worksWithID);
                     return 0;
                 })
                 setWorkOrder([])
@@ -215,23 +224,34 @@ const CreateProject = () => {
             setCurrentUser(username);
             setIsAdmin(AuthService.isAdmin());
             async function fetchData() {
+                if (localStorage.getItem("access_token") === null) {
+                    localStorage.removeItem("username");
+                    navigate("/login");
+                }
                 let valid = await AuthService.checkToken();
                 if (valid.includes("Valid")) {
                     await getData(username);
                 }
                 else {
                     async function refresh() {
+                        if (localStorage.getItem("refresh_token") === null) {
+                            alert("Session ended.");
+                            localStorage.removeItem("username");
+                            navigate("/login");
+                        }
                         let res = await AuthService.refreshToken();
                         if (res) {
                             await getData(username);
                         }
                         else {
-                            alert("Cuts");
+                            alert("Session ended.");
+                            localStorage.removeItem("username");
                             navigate("/login");
                         }
                     }
                     refresh();
                 }
+                setProjectDate(format(Date.now(), "yyyy-MM-dd"))
             }
             fetchData();
         }
@@ -299,7 +319,7 @@ const CreateProject = () => {
                 {(!formState) ? (
                     <>
                         <div className="form-row">
-                            <div className="col">
+                            <div className="form-col">
                                 <label htmlFor="project-name">Project name:</label>
                                 <Input
                                     type="text"
@@ -308,9 +328,10 @@ const CreateProject = () => {
                                     value={projectName}
                                     onChange={onChangeProjectName}
                                     validations={[required]}
+                                    autoFocus
                                 />
                             </div>
-                            <div className="col">
+                            <div className="form-col">
                                 <label htmlFor="project-date">Project start date:</label>
                                 <Input
                                     type="date"
@@ -323,19 +344,20 @@ const CreateProject = () => {
                             </div>
                         </div>
                         <div className="form-row">
-                            <div className="col">
+                            <div className="form-col">
                                 <label htmlFor="work-name">Work name:</label>
-                                <Input
+                                <input
                                     type="text"
                                     className="form-control"
                                     name="work-name"
                                     value={workName}
                                     onChange={onChangeWorkName}
+                                    ref={input_workName}
                                 />
                             </div>
-                            <div className="col">
+                            <div className="form-col">
                                 <label htmlFor="work-time">Work time:</label>
-                                <Input
+                                <input
                                     type="number"
                                     className="form-control"
                                     name="work-time"
@@ -345,8 +367,8 @@ const CreateProject = () => {
                                     onChange={onChangeWorkTime}
                                 />
                             </div>
+                            <button className="btn-work-add" style={{height: "38px"}} onClick={addWork}>Add work</button>
                             
-                            <button className="btn-work-add" onClick={addWork}>Add work</button>
                         </div>
                     
                         <div className="works">
@@ -354,12 +376,13 @@ const CreateProject = () => {
                             {works.length > 0 && (
                                 <>   
                                     {works.map((work, index) => {
+                                        let work_time = worksWithTime[worksWithTime.findIndex((item) => Object.keys(item)[0] === work)][work]
                                         return <div className="work" value={work}>
                                             <div className="work-content">
-                                                <h2>{index+1}/ {work}</h2>
+                                                <h2>{index+1}/ {work} / {work_time}</h2>
                                             </div>
                                             <div className="work-actions">
-                                                <button className="btn-work-edit">Edit</button>
+                                                {/* <button className="btn-work-edit">Edit</button> */}
                                                 <button className="btn-work-delete" onClick={removeWork}>Delete</button>
                                             </div>
                                         </div>

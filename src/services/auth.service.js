@@ -21,6 +21,19 @@ const login = (username, password) => {
         });
 };
 
+const recover = (username, password, email, phone) => {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("new_password", password);
+    params.append("email", email);
+    params.append("phone", phone);
+    return axios
+        .put(API_URL + "user/password", params)
+        .then(response => {
+            return response.data.message;
+        });
+};
+
 const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -41,7 +54,15 @@ const register = (username, password) => {
 };
 
 const getCurrentUser = () => {
-    return localStorage.getItem("username");
+    if (localStorage.getItem("username"))
+        return localStorage.getItem("username");
+    else {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("is_admin");
+        return null;
+    }
 };
 
 const isAdmin = () => {
@@ -68,17 +89,23 @@ const refreshToken = async () => {
                 localStorage.removeItem("access_token");
                 localStorage.setItem("access_token", response.data.access_token);
             }
+            else {
+                return false;
+            }
 
             return true;
         }
+        logout();
         return false;
     } catch (error) {
+        logout();
         return false;
     }
 }
 
 const AuthService = {
     login,
+    recover,
     logout,
     register,
     getCurrentUser,

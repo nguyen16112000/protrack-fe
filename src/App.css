@@ -4,3 +4,19 @@
     margin-right: 0px;
     padding: 0;
 }
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.form-col {
+    flex: 1 0;
+    margin-right: 5px;
+}
+
+label {
+    margin-right: 5px;
+}

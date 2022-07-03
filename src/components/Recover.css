@@ -1,5 +1,5 @@
-.btn-register{
-    width: 60%;
+.btn-recover{
+    width: 100%;
     padding: 10px;
     margin-bottom: 5px;
     background-color: rgb(27, 146, 220);
@@ -8,8 +8,8 @@
     border-radius: 5px;
     cursor: pointer;
 }
-
-.form-register > div:nth-child(5) {
+  
+.form-recover > div:nth-child(5) {
     margin-top: 10px;
     display: flex;
     align-items: center;

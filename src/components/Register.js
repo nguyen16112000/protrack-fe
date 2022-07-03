@@ -1,10 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
+import { isEmail } from 'validator';
 
 import AuthService from "../services/auth.service";
+
+import ProfileImg from "../avatar.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Register.css";
@@ -18,6 +21,12 @@ const required = (value) => {
         );
     }
 };
+
+const emailFormat = (value) => {
+    if (!isEmail(value)) {
+        return <small className="form-text text-danger">Invalid email format</small>;
+    }
+  }
 
 const fusername = (value) => {
     if (value.length < 3 || value.length > 20) {
@@ -39,14 +48,20 @@ const fpassword = (value) => {
     }
 };
 
+
+
+
 const Register = () => {
     let navigate = useNavigate();
     const form = useRef();
     const checkBtn = useRef();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
     const [successful, setSuccessful] = useState(false);
     const [message, setMessage] = useState("");
+
     const onChangeUsername = (e) => {
         const username = e.target.value;
         setUsername(username);
@@ -54,6 +69,14 @@ const Register = () => {
     const onChangePassword = (e) => {
         const password = e.target.value;
         setPassword(password);
+    };
+    const onChangeEmail = (e) => {
+        const email = e.target.value;
+        setEmail(email);
+    };
+    const onChangePhone = (e) => {
+        const phone = e.target.value;
+        setPhone(phone);
     };
 
     const handleRegister = (e) => {
@@ -86,6 +109,13 @@ const Register = () => {
         }
     }
 
+    useEffect(() => {
+        const username = AuthService.getCurrentUser();
+        if (username !== null) {
+            navigate("/home")
+        }
+    }, [navigate])
+
     return (
         <>
             <nav className="navbar navbar-expand navbar-dark bg-dark">
@@ -111,7 +141,7 @@ const Register = () => {
             <div className="col-md-12">
                 <div className="card card-container">
                     <img
-                        src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                        src={ProfileImg}
                         alt="profile-img"
                         className="profile-img-card"
                     />
@@ -127,6 +157,30 @@ const Register = () => {
                                         value={username}
                                         onChange={onChangeUsername}
                                         validations={[required, fusername]}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="email">Email</label>
+                                    <Input
+                                        type="text"
+                                        className="form-control"
+                                        name="email"
+                                        value={email}
+                                        onChange={onChangeEmail}
+                                        validations={[required, emailFormat]}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="phone">Phone</label>
+                                    <Input
+                                        type="text"
+                                        className="form-control"
+                                        name="phone"
+                                        value={phone}
+                                        onChange={onChangePhone}
+                                        validations={[required]}
                                     />
                                 </div>
 

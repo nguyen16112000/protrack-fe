@@ -68,10 +68,26 @@ const evaluateProject = async (project_id, start_date) => {
     }
 }
 
+const inviteMember = async (project_id, username) => {
+    try {
+        
+        const response = await axios.post(API_URL + project_id + "/invite/" + username, {}, {headers: authHeader()})
+        return response.data.message
+        
+    }
+    catch(error){
+        console.log(error)
+        if (error.response.data.error_message)
+            return error.response.data.error_message
+        return error.response.data.message;
+    }
+}
+
 const ProjectService = {
     getProjectsByUsers,
     createProject,
-    evaluateProject
+    evaluateProject,
+    inviteMember
 }
 
 export default ProjectService;

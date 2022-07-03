@@ -16,9 +16,27 @@ const getUnreadNotifications = async (username) => {
         return error.response.data.error_message
     }
 }
+
+const readNotification = async (username, noti_id, status) => {
+    try {
+        const params = new URLSearchParams();
+        params.append("status", status);
+        const response = await axios.post(API_URL + username + "/read/" + noti_id, params, {headers: authHeader()})
+        // console.log(response.data.message)
+        return response.data.message;
+    }
+    catch(error){
+        console.log(error.response.data.message)
+        if (error.response.data.message)
+            return error.response.data.message;
+        return error.response.data.error_message
+    }
+}
+
 const UserService = {
     getUsers,
-    getUnreadNotifications
+    getUnreadNotifications,
+    readNotification
 }
 
 export default UserService;

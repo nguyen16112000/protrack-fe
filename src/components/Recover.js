@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import Form  from "react-validation/build/form"
 import Input  from "react-validation/build/input"
 import CheckButton  from "react-validation/build/button"
+import { isEmail } from 'validator';
 
 import AuthService from "../services/auth.service"
 
 import ProfileImg from "../avatar.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./Login.css";
+import "./Recover.css";
 
 const required = value => {
     if (!value) {
@@ -20,14 +21,22 @@ const required = value => {
         );
     }
 };
+const emailFormat = (value) => {
+    if (!isEmail(value)) {
+        return <small className="form-text text-danger">Invalid email format</small>;
+    }
+};
 
-const Login = () => {
+const Recover = () => {
     let navigate = useNavigate();
     const form = useRef();
     const checkBtn = useRef();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState(false);
     const [message, setMessage] = useState("");
 
     const onChangeUsername = (e) => {
@@ -39,29 +48,41 @@ const Login = () => {
         const password = e.target.value;
         setPassword(password);
     };
+    const onChangeEmail = (e) => {
+        const email = e.target.value;
+        setEmail(email);
+    };
+    const onChangePhone = (e) => {
+        const phone = e.target.value;
+        setPhone(phone);
+    };
 
-    const handleLogin = (e) => {
+    const handleRecover = (e) => {
         e.preventDefault();
 
         setMessage("");
         setLoading(true);
+        setStatus(false);
 
         form.current.validateAll();
 
         if (checkBtn.current.context._errors.length === 0) {
-            AuthService.login(username, password).then(
-                () => {
-                    // navigate("/home");
-                    // window.location.reload();
+            AuthService.recover(username, password, email, phone).then(
+                (response) => {
+                    setLoading(false);
+                    setMessage("Recover successful.");
+                    setStatus(true);
                     setTimeout(() => {
                         navigate("/home");
-                    }, 1000);
+                    }, 2000);
                 },
                 error => {
-                    const resMessage = 
+                    let resMessage = 
                         (error.response && error.response.data && error.response.data.message)
                         || error.message
                         || error.toString();
+                    if (resMessage === "BAD REQUEST")
+                        resMessage = "Incorrect infomations."
 
                     setLoading(false);
                     setMessage(resMessage);
@@ -77,18 +98,7 @@ const Login = () => {
         const username = AuthService.getCurrentUser();
         console.log(username)
         if (username !== null) {
-            async function refresh() {
-                if (localStorage.getItem("refresh_token")) {
-                    let res = await AuthService.refreshToken();
-                    if (res) {
-                        navigate("/home")
-                    }
-                    else {
-                        alert("Session ended.");
-                    }
-                }
-            }
-            refresh();
+            navigate("/home")
         }
     }, [navigate])
 
@@ -122,7 +132,7 @@ const Login = () => {
                         className="profile-img-card"
                     />
 
-                    <Form className="form-login" onSubmit={handleLogin} ref={form}>
+                    <Form className="form-recover" onSubmit={handleRecover} ref={form}>
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
                             <Input
@@ -136,7 +146,31 @@ const Login = () => {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="password">Password</label>
+                                    <label htmlFor="email">Email</label>
+                                    <Input
+                                        type="text"
+                                        className="form-control"
+                                        name="email"
+                                        value={email}
+                                        onChange={onChangeEmail}
+                                        validations={[required, emailFormat]}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="phone">Phone</label>
+                                    <Input
+                                        type="text"
+                                        className="form-control"
+                                        name="phone"
+                                        value={phone}
+                                        onChange={onChangePhone}
+                                        validations={[required]}
+                                    />
+                                </div>
+
+                        <div className="form-group">
+                            <label htmlFor="password">New password</label>
                             <Input
                                 type="password"
                                 className="form-control"
@@ -147,21 +181,27 @@ const Login = () => {
                             />
                         </div>
 
-                        <Link to={"/recover"}>Forget password?</Link>
-
                         <div className="form-group">
                             <button 
-                                className="btn-login btn-primary btn-block"
+                                className="btn-recover btn-primary btn-block"
                                 disabled={loading}
                             >
                                 {loading && (
                                     <span className="spinner-border spinner-border-sm"></span>
                                 )}
-                                <span>Login</span>
+                                <span>Recover</span>
                             </button>
                         </div>
 
-                        {message && (
+                        {message && status && (
+                            <div className="form-group">
+                                <div className="alert alert-success" role="alert">
+                                    {message}
+                                </div>
+                            </div>
+                        )}
+
+                        {message && !status && (
                             <div className="form-group">
                                 <div className="alert alert-danger" role="alert">
                                     {message}
@@ -176,4 +216,4 @@ const Login = () => {
         </>
     );
 }
-export default Login;
+export default Recover;

@@ -4,11 +4,13 @@
     background: turquoise;
 }
 
-.form-row{
-    display: flex;
-    flex-direction: row;
-}
-
 .btn-work-add {
     align-self:flex-end;
+}
+
+.work {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: black;
 }

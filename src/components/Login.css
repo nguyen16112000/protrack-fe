@@ -29,6 +29,7 @@
 .btn-login{
   width: 60%;
   padding: 10px;
+  margin-bottom: 5px;
   background-color: rgb(27, 146, 220);
   color: white;
   border: none;
@@ -36,7 +37,14 @@
   cursor: pointer;
 }
 
-.form-login > div:nth-child(3) {
+.form-login > a {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.form-login > div:nth-child(4) {
   margin-top: 10px;
   display: flex;
   align-items: center;
