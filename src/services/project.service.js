@@ -18,7 +18,6 @@ const getProjectsByUsers = async (username) => {
 
 const createProject = async (name, date, work_object, work_order_object) => { 
     try {
-        console.log(date)
         let works_map = new Map();
         work_object.forEach((value, index) => {
             works_map.set([(index+1).toString()], [Object.keys(value)[0], value[Object.keys(value)]])
@@ -63,23 +62,104 @@ const evaluateProject = async (project_id, start_date) => {
         return false;
     }
     catch(error){
-        console.log(error)
         return error;
     }
 }
 
 const inviteMember = async (project_id, username) => {
     try {
-        
         const response = await axios.post(API_URL + project_id + "/invite/" + username, {}, {headers: authHeader()})
         return response.data.message
         
     }
     catch(error){
-        console.log(error)
         if (error.response.data.error_message)
             return error.response.data.error_message
         return error.response.data.message;
+    }
+}
+
+const updateWork = async (project_id, work_id, work_name, work_detail, work_time, es_date, lf_date, worker) => {
+    try {
+        const params = new URLSearchParams();
+        params.append("name", work_name);
+        params.append("detail", work_detail);
+        params.append("work_time", work_time);
+        params.append("es_date", es_date.toString());
+        params.append("lf_date", lf_date.toString());
+        console.log(worker)
+        if (worker !== "")
+            params.append("worker", worker);
+        const response = await axios.put(API_URL + project_id + "/work/" + work_id, params, {headers: authHeader()})
+        return response
+        
+    }
+    catch(error){
+        if (error.response.data.error_message)
+            return error.response.data.error_message
+        return error.response.data.message;
+    }
+}
+
+const startWork = async (project_id, work_id) => {
+    try {
+        const response = await axios.post(API_URL + project_id + "/work/" + work_id + "/start", {}, {headers: authHeader()})
+        return response
+    }
+    catch(error){
+        if (error.response.data.error_message)
+            return error.response.data.error_message
+        return error.response.data.message;
+    }
+}
+
+const getProof = async (project_id, work_id) => {
+    try {
+        const response = await axios.get(API_URL + project_id + "/work/" + work_id + "/proof", {headers: authHeader()})
+        return response
+        
+    }
+    catch(error){
+        if (error.response.data.error_message)
+            return error.response.data.error_message
+        return error.response.data.message;
+    }
+}
+
+const setProof = async (file, project_id, work_id) => {
+    try {
+        let formData = new FormData();
+        formData.append("file", file);
+        const response = await axios.post(API_URL + project_id + "/work/" + work_id + "/proof", 
+            formData, 
+            {headers: 
+                authHeader(),
+                "Content-Type": "multipart/form-data"
+            })
+        return response
+        
+    }
+    catch(error){
+        if (error.message && error.message === "Network Error") {
+            return "File too large to submit"
+        }
+        if (error.response.data.error_message)
+            return error.response.data.error_message
+        return error.response.data.message;
+    }
+}
+
+const approveWork = async (project_id, work_id, status) => {
+    try {
+        const params = new URLSearchParams();
+        params.append("status", status);
+        const response = await axios.post(API_URL + project_id + "/work/" + work_id + "/approve", params, {headers: authHeader()})
+        return response;
+    }
+    catch(error){
+        if (error.response.data.message)
+            return error.response.data.message;
+        return error.response.data.error_message
     }
 }
 
@@ -87,7 +167,12 @@ const ProjectService = {
     getProjectsByUsers,
     createProject,
     evaluateProject,
-    inviteMember
+    inviteMember,
+    updateWork,
+    startWork,
+    getProof,
+    setProof,
+    approveWork
 }
 
 export default ProjectService;

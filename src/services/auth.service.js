@@ -3,22 +3,22 @@ import authHeader from "./auth-header"
 
 const API_URL = "http://localhost:9090/api/";
 
-const login = (username, password) => {
+const login = async (username, password) => {
     const params = new URLSearchParams();
     params.append("username", username);
     params.append("password", password)
-    return axios
-        .post(API_URL + "login", params)
-        .then(response => {
-            if (response.data.access_token) {
-                localStorage.setItem("access_token", response.data.access_token);
-                localStorage.setItem("refresh_token", response.data.refresh_token);
-                localStorage.setItem("username", response.data.username);
-                if (response.data.is_admin)
-                    localStorage.setItem("is_admin", true)
-            }
-            return response.data;
-        });
+    let res = await axios.post(API_URL + "login", params)
+                        .then(response => {
+                            if (response.data.access_token) {
+                                localStorage.setItem("access_token", response.data.access_token);
+                                localStorage.setItem("refresh_token", response.data.refresh_token);
+                                localStorage.setItem("username", response.data.username);
+                                if (response.data.is_admin)
+                                    localStorage.setItem("is_admin", true)
+                            }
+                            return response.data;
+                        })
+    return res
 };
 
 const recover = (username, password, email, phone) => {

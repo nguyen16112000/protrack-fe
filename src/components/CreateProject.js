@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import AuthService from "../services/auth.service";
 import ProjectService from "../services/project.service";
@@ -13,7 +14,10 @@ import Notification from "../notification2.png"
 
 import { format } from 'date-fns';
 
+import "react-toastify/dist/ReactToastify.css"
 import "./CreateProject.css"
+
+toast.configure();
 
 const CreateProject = () => {
     const [currentUser, setCurrentUser] = useState("");
@@ -40,6 +44,23 @@ const CreateProject = () => {
     const checkBtn = useRef();
 
     const navigate = useNavigate();
+
+    const notify = (message, type = "info") => {
+        switch(type) {
+            case "success":
+                toast.success(message)
+                break;
+            case "warning":
+                toast.warn(message)
+                break;
+            case "error":
+                toast.error(message)
+                break;
+            default:
+                toast.info(message)
+                break;
+        }
+    }
 
     const getData = async (username) => {
         let noti = await UserService.getUnreadNotifications(username);
@@ -125,7 +146,8 @@ const CreateProject = () => {
         }
         else {
             // createNotification("error", "Please enter work name!!!")
-            alert("Please enter work name!!!")
+            notify("Please enter work name!!!", "error");
+            // alert("Please enter work name!!!")
         }
     }
 
@@ -372,21 +394,30 @@ const CreateProject = () => {
                         </div>
                     
                         <div className="works">
-                            <label htmlFor="works">Works:</label>
                             {works.length > 0 && (
                                 <>   
-                                    {works.map((work, index) => {
-                                        let work_time = worksWithTime[worksWithTime.findIndex((item) => Object.keys(item)[0] === work)][work]
-                                        return <div className="work" value={work}>
-                                            <div className="work-content">
-                                                <h2>{index+1}/ {work} / {work_time}</h2>
-                                            </div>
-                                            <div className="work-actions">
-                                                {/* <button className="btn-work-edit">Edit</button> */}
-                                                <button className="btn-work-delete" onClick={removeWork}>Delete</button>
-                                            </div>
+                                    <label htmlFor="works-content">Works:</label>
+                                    <div className="works-content works-table">
+                                        <div className="work-content-header work-table-row">
+                                            <div className="work-index-header work-table-cell">Index</div>
+                                            <div className="work-name-header work-table-cell">Name</div>
+                                            <div className="work-time-header work-table-cell">Time</div>
+                                            <div className="work-action-header work-table-cell">Action</div>
                                         </div>
-                                    })}
+                                        {works.map((work, index) => {
+                                            let work_time = worksWithTime[worksWithTime.findIndex((item) => Object.keys(item)[0] === work)][work]
+                                            return <row className="work work-table-row" value={work}>
+                                                <div className="work-index work-table-cell">{index+1}</div>
+                                                <div className="work-name work-table-cell" style={{textAlign: "left"}}>{work}</div>
+                                                <div className="work-time work-table-cell">{work_time}</div>
+                                                <div className="work-actions work-table-cell">
+                                                    {/* <button className="btn-work-edit">Edit</button> */}
+                                                    <button className="btn-work-delete" onClick={removeWork}>Delete</button>
+                                                </div>
+                                                
+                                            </row>
+                                        })}
+                                    </div>
                                 </>
                             )}
                             {works.length === 0 && isEmptyWorks && (
@@ -409,13 +440,19 @@ const CreateProject = () => {
                     <>
                         {works.length > 0 && (
                             <div className="work-order">
-                                <label htmlFor="works">Works:</label>
+                                <label htmlFor="works">Select work orders:</label>
+                                <div className="works works-table">
+                                    <div className="work-content-header work-table-row">
+                                        <div className="work-index-header work-table-cell">Index</div>
+                                        <div className="work-name-header work-table-cell">Name</div>
+                                        <div className="work-order-header work-table-cell">Order</div>
+                                    </div>
                                     {works.map((work, index) => {
-                                        return <div className="work">
-                                            <div className="work-content">
-                                                <h2>{index+1}/ {work}</h2>
-                                            </div>
+                                        return <div className="work work-table-row">
+                                            <div className="work-index work-table-cell">{index+1}</div>
+                                                <div className="work-name work-table-cell" style={{textAlign: "left"}}>{work}</div>
                                             <Select 
+                                                className="work-table-cell"
                                                 name="select-order"
                                                 placeholder="--"
                                                 // value={work_order[index+1]}
@@ -427,26 +464,28 @@ const CreateProject = () => {
                                             />
                                         </div>
                                     })}
+                                </div>
                             </div>
                         )}
                     </>
                 )}
                 
-
-                {(!formState) ? (
-                    <button className="btn-form-add" onClick={changeFormState}>Add</button>
-                ) : (<>
-                        {loading ? (
-                            <span className="spinner-border spinner-border-sm"></span>
-                        ) : (
-                        <>
-                            <button className="btn-form-finish" type="submit">Finish</button>
-                            <button className="btn-form-back" onClick={changeFormState}>Back</button>
+                <div className="btn-form-project">
+                    {(!formState) ? (
+                        <button className="btn-form-add" onClick={changeFormState}>Add</button>
+                    ) : (<>
+                            {loading ? (
+                                <span className="spinner-border spinner-border-sm"></span>
+                            ) : (
+                            <>
+                                <button className="btn-form-finish" type="submit">Finish</button>
+                                <button className="btn-form-back" onClick={changeFormState}>Back</button>
+                            </>
+                            )}
                         </>
-                        )}
-                    </>
-                )}
+                    )}
                 <button className="btn-form-cancel" onClick={handleCancel}>Cancel</button>
+                </div>
                 <CheckButton style={{display: "none"}} ref={checkBtn} />
         </Form>
     </>)

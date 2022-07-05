@@ -1,5 +1,5 @@
 .form-create {
-    padding: 5vw;
+    padding: 10px;
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.25);
     background: turquoise;
 }
@@ -8,9 +8,45 @@
     align-self:flex-end;
 }
 
-.work {
+.works-table {
+    display: table;
+    color: black;
+    width: 100%;
+}
+
+.work-table-row {
+    display: table-row;
+}
+
+.work-table-cell {
+    display: table-cell;
+    word-break: break-word;
+    /* width: 10vw; */
+    min-width: 5vw;
+    max-width: 33vw;
+    border: 1px solid white;
+    text-align: center;
+    padding: 1px;
+}
+
+.btn-form-project {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+
+/* .work-content-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     color: black;
 }
+
+.work-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: black;
+} */
+

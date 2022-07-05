@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import AuthService from "../services/auth.service";
 import ProjectService from "../services/project.service";
@@ -11,9 +12,12 @@ import Admin from "../admin.svg"
 import Plus from "../plus.svg"
 import Member from "../group.svg";
 
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 
+import "react-toastify/dist/ReactToastify.css"
 import "./Home.css"
+
+toast.configure();
 
 const Home = () => {
     const [content, setContent] = useState([]);
@@ -37,6 +41,7 @@ const Home = () => {
     const [workSDate, setWorkSDate] = useState(null);
     const [workFDate, setWorkFDate] = useState(null);
     const [worker, setWorker] = useState(null);
+    const [file, setFile] = useState(undefined);
 
     const notiImg = useRef(null);
     const notifications = useRef(null);
@@ -49,13 +54,28 @@ const Home = () => {
     const input_sdate = useRef(null);
     const navigate = useNavigate();
 
+    const notify = (message, type = "info") => {
+        switch(type) {
+            case "success":
+                toast.success(message)
+                break;
+            case "warning":
+                toast.warn(message)
+                break;
+            case "error":
+                toast.error(message)
+                break;
+            default:
+                toast.info(message)
+                break;
+        }
+    }
+
     const getData = async (username) => {
         let project = await ProjectService.getProjectsByUsers(username);
         let noti = await UserService.getUnreadNotifications(username);
         setContent(project);
         setUnreadNoti(noti);
-        setFocusProject(0);
-        setFocusProject(-1);
         setDateNow(new Date(format(Date.now(), "yyyy-MM-dd")))
     }
 
@@ -95,10 +115,10 @@ const Home = () => {
                 setUnreadNoti(new_unreadNoti);
             }
             else if (response.includes("Username not found")){
-                alert("Username not found!");
+                notify("Username not found!", "warning");
             }
             else {
-                alert("Error occured!");
+                notify("Error occured!", "error");
             }
             window.location.reload();
         }
@@ -108,7 +128,7 @@ const Home = () => {
                 setUnreadNoti(new_unreadNoti);
             }
             else {
-                alert("Error occured!");
+                notify("Error occured!", "error");
             }
         }
         else if (e.target.className === "noti-action-read") {
@@ -117,7 +137,7 @@ const Home = () => {
                 setUnreadNoti(new_unreadNoti);
             }
             else {
-                alert("Error occured!");
+                notify("Error occured!", "error");
             }
         }
     }
@@ -231,6 +251,9 @@ const Home = () => {
     const displayWorksName = (works) => {
         return (<div className="work-titles">
             {works.map((work, index) => {
+                let isWorkFinished = false
+                if (work.f_date !== null || work.approved !== false)
+                    isWorkFinished = true
                 return (<button 
                         className="work-title" 
                         array-index={index}
@@ -238,6 +261,7 @@ const Home = () => {
                         style={{height: `calc(100% / ${works.length})`}}
                     >
                     {work.name}
+                    {/* {(isWorkFinished) ? ("Yes") : ("No")} */}
                 </button>)
         })}
         </div>)
@@ -254,7 +278,9 @@ const Home = () => {
                 let occupied = new Array(month_dates.length).fill(0);
                 let es =  new Date(work.es_date);
                 let lf = new Date(work.lf_date);
-                // console.log(work.work_time)
+                let work_time = work.work_time;
+                let s = (work.s_date !== null) ? (new Date(work.s_date)) : (null);
+                let f = (work.f_date !== null) ? (new Date(work.f_date)) : (null);
                 es.setHours(0);
                 es.setMinutes(0);
                 es.setSeconds(0);
@@ -268,11 +294,22 @@ const Home = () => {
                 if (lf > month_last)
                     lf = month_last
                 let dow = getDaysOfWork(es, lf);
-                if (es > month_last || lf < month_start)
-                    dow = 0;
-                let bgcolor = (index % 2) ? ("blue") : ("yellow")
-                for (let i = 0; i < dow; i++)
+                
+
+                for (let i = 0; i < dow; i++){
                     occupied[es.getDate() - 1 + i] = 1;
+                    if (s === null || f === null && i <= work_time - 1)
+                        occupied[es.getDate() - 1 + i] = 2;
+                        
+                }
+
+                if (s !== null && f !== null) {
+                    dow = getDaysOfWork(s, f);
+                    if (s > month_last || f < month_start)
+                        dow = 0;
+                        for (let i = 0; i < dow; i++)
+                            occupied[s.getDate() - 1 + i] = 2;
+                }
                 
                 // if (dow > work.work_time) {
                 //     let first_half = work.work_time / dow * 100;
@@ -289,9 +326,13 @@ const Home = () => {
                     {month_dates.map(date => {
                         let style = {gridColumn: date.date, gridRow: index + 1};
                         let title = "";
-                        if (occupied[date.date - 1] === 1) {
-                            style["background"] = bgcolor;
+                        if (occupied[date.date - 1] === 2) {
+                            style["background"] = (index % 2) ? ("blue") : ("yellow");
                             title = "Work day"
+                        }
+                        else if (occupied[date.date - 1] === 1) {
+                            style["background"] = (index % 2) ? ("lightblue") : ("lightyellow");
+                            title = "Reserved work day"
                         }
                         if (occupied[date.date - 1] === 0 || occupied[date.date + 1 - 1] === 0){
                             style["borderRight"] = "2px solid black";
@@ -336,9 +377,10 @@ const Home = () => {
         let index = e.target.getAttribute("array-index");
         setFocusProject(index);
         setFocusWork(-1);
-        if (content[index].userProject[currentUser] !== undefined)
+        if (content[index].userProject[currentUser] !== undefined){
             setIsProjectAdmin(content[index].userProject[currentUser].includes("ADMIN"));
-                
+        }
+            
         setDateNow(new Date(format(Date.now(), "yyyy-MM-dd")));
         if (r_container.current.classList.contains("active")) {
             r_container.current.classList.toggle("active");
@@ -365,9 +407,49 @@ const Home = () => {
         setOpenProjectMembers(!openProjectMembers)
     }
 
+    const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+        const byteCharacters = atob(b64Data);
+        const byteArrays = [];
+      
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+          const slice = byteCharacters.slice(offset, offset + sliceSize);
+      
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+      
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+      
+        const blob = new Blob(byteArrays, {type: contentType});
+        return blob;
+    }
+
     const onClickWork = (e) => {
         e.preventDefault();
         let index = e.target.getAttribute("array-index");
+        async function getFile() {
+            if (content[focusProject].works[index].proof !== null
+                && (isProjectAdmin
+                || currentUser === content[focusProject].works[index].user)
+                ) {
+                let proof_file = await ProjectService.getProof(content[focusProject].id, content[focusProject].works[index].id)
+                // console.log(proof_file)
+                // const blob = new Blob([proof_file.data], { type: "application/octet-stream" });
+                const blob = b64toBlob(proof_file.data, "application/octet-stream");
+                const url = URL.createObjectURL(blob);
+                setFile(url);
+                // let file_url = window.URL.createObjectURL(new Blob(proof_file))
+                // setFile(file_url);
+            }
+            else {
+                setFile(undefined);
+            }
+        }
+        getFile();
+
         setFocusWork(index);
         setWorkName(content[focusProject].works[index].name);
         setWorkTime(content[focusProject].works[index].work_time);
@@ -404,11 +486,13 @@ const Home = () => {
         e.preventDefault();
         const username = add_member.current.value;
         if (!username || username === "" )
-            alert("Please enter username to add!");
+            notify("Please enter username to add!", "warning");
         let response = await ProjectService.inviteMember(content[focusProject].id , username)
-        if (response.includes("NOT FOUND"))
-            alert("User not found!");
-        else alert(response)
+        if (response.includes("Invited"))
+            notify(response);
+        else if (response.includes("NOT FOUND"))
+            notify("User not found!", "warning");
+        else notify(response, "error")
         // if (response.includes("successful"))    {
         //     //need to update content[focusProject].userProject
         //     let new_content = content;
@@ -457,54 +541,159 @@ const Home = () => {
 
     }
 
-    const onChangeWorkS = (e) => {
-        console.log(e.target.value);
-        const s = e.target.value;
-        console.log(s);
-        setWorkSDate(s);
-        let new_date = new Date(s);
-        new_date.setDate(new_date.getDate() + workTime - 1);
-        setWorkFDate(format(new_date, "yyyy-MM-dd"));
+    const onChangeFile = (e) => {
+        // console.log(e)
+        setFile(e.target.files[0])
     }
 
     const handleBtnWorkEdit = async (e) => {
         e.preventDefault();
-        if (e.target.className === "btn-work-cancel") {
-            r_container.current.classList.toggle("active");
-            formWorkEdit.current.classList.toggle("active");
+        if (e.target.className === "btn-work-update") {
+            // console.log(content[focusProject].works[focusWork])
+            // console.log(workName)
+            // console.log(workDetail)
+            // console.log(workESDate)
+            // console.log(workLFDate)
+            // console.log(worker !== "")
+            let response = await ProjectService.updateWork(
+                content[focusProject].id,
+                content[focusProject].works[focusWork].id,
+                workName,
+                workDetail,
+                workTime,
+                workESDate,
+                workLFDate,
+                worker
+            )
+            if (response.data) {
+                notify(response.data.message, "success")
+                content[focusProject].works[focusWork].name = workName;
+                content[focusProject].works[focusWork].detail = workDetail;
+                content[focusProject].works[focusWork].work_time = workTime;
+                content[focusProject].works[focusWork].es_date = workESDate;
+                content[focusProject].works[focusWork].lf_date = workLFDate;
+                content[focusProject].works[focusWork].user = worker;
+            }
+            else {
+                notify("Error occured!", "error")
+            }
+            setTriggerRender(!triggerRender)
         }
-        else if (e.target.className === "btn-work-update") {
-            r_container.current.classList.toggle("active");
-            formWorkEdit.current.classList.toggle("active");
+        else if (e.target.className === "btn-work-start") {
+            let response = await ProjectService.startWork(content[focusProject].id,
+                content[focusProject].works[focusWork].id)
+            
+            if (response.data) {
+                if (response.data.message === "Work started") {
+                    notify(response.data.message, "success")
+                    content[focusProject].works[focusWork].s_date = response.data.data.s_date;
+                }
+                else {
+                    if (content[focusProject].works[focusWork].user === "")
+                        notify(response.data.message + "\nWork isn't assigned to anyone.", "warning");
+                    else
+                    notify(response.data.message + "\nPrevious works hasn't finfished.", "warning");
+                }
+                    
+            }
+            else {
+                notify("Error occured!", "error")
+            }
         }
+        else if (e.target.className === "btn-work-submit") {
+            if (file === undefined) {
+                notify("Please add file before submit.", "warning");
+                return;
+            }
+            let response = await ProjectService.setProof(
+                file,
+                content[focusProject].id,
+                content[focusProject].works[focusWork].id)
+            if (response === "File too large to submit") {
+                notify(response, "warning");
+                return;
+            }
+            if (response.data.status === "OK") {
+                notify("Proof submitted", "success");
+            }
+            else {
+                notify("Error occured!", "error")
+            }
+        }
+        else if (e.target.className === "btn-work-accept") {
+            let response = await ProjectService.approveWork(
+                content[focusProject].id,
+                content[focusProject].works[focusWork].id,
+                1
+            )
+            if (response.data.message.includes("Success")) {
+                notify("Approved", "success");
+                content[focusProject].works[focusWork].approved = true;
+                content[focusProject].works[focusWork].f_date = response.data.data.f_date;
+            }
+            else {
+                notify("Error occured!", "error")
+            }
+        }
+        else if (e.target.className === "btn-work-decline") {
+            let response = await ProjectService.approveWork(
+                content[focusProject].id,
+                content[focusProject].works[focusWork].id,
+                0
+            )
+            if (response.data.message.includes("Success")) {
+                notify("Declined", "success");
+                content[focusProject].works[focusWork].proof = null;
+            }
+            else {
+                notify("Error occured!", "error")
+            }
+        }
+        r_container.current.classList.toggle("active");
+        formWorkEdit.current.classList.toggle("active");
     }
 
     const handleEditSubmit = (e) => {
         e.preventDefault();
+        console.log(e);
     }
 
-    const datetoTxt = (value) => {
-        let new_date = new Date(value);
+    const dateToText = (date) => {
+        let new_date = new Date(date)
         return format(new_date, "MM/dd/yyyy");
     }
 
     const handleFormWorkEdit = () => {
         if (focusProject === -1 || focusWork === -1)
             return <></>
-        let members = Object.keys(content[focusProject].userProject);
-        let displayBtnUpdate = {display: (!isProjectAdmin && worker !== currentUser) ? ("none") : ("initial")};
-        
-        let max_sdate = new Date(workLFDate);
-        max_sdate.setDate(max_sdate.getDate() - parseInt(workTime) + 1);
-        max_sdate = format(max_sdate, "yyyy-MM-dd")
-
         let isWorkStarted = false;
         let isWorkFinished = false;
         let date_now = new Date(Date.now())
-        if (workSDate && workSDate < format(date_now, "yyyy-MM-dd"))
+        if (workSDate && workSDate <= format(date_now, "yyyy-MM-dd"))
             isWorkStarted = true
-        if (workFDate || content[focusProject].works[focusWork].approved)
+        if (workFDate || content[focusProject].works[focusWork].approved !== false)
             isWorkFinished = true
+        let work_before = content[focusProject].works[focusWork].work_before;
+        let members = Object.keys(content[focusProject].userProject);
+
+        let displayBtnUpdate = {display: (isProjectAdmin) && (!isWorkStarted) ? ("initial") : ("none")};
+        let displayBtnStart = {display: (isProjectAdmin || worker === currentUser) && (!isWorkStarted) ? ("initial") : ("none")};
+        let displayBtnApprove = {display: (isProjectAdmin && content[focusProject].works[focusWork].proof !== null) && (isWorkStarted) ? ("initial") : ("none")};
+        let displayBtnSubmit = {display: (worker === currentUser && isWorkStarted) ? ("initial") : ("none")};
+        if (isWorkFinished) {
+            displayBtnUpdate = {display: "none"}
+            displayBtnStart = {display: "none"}
+            displayBtnApprove = {display: "none"}
+            displayBtnSubmit = {display: "none"}
+        }
+        let displayProof = {
+            display: 
+            (content[focusProject].works[focusWork].proof !== null && isProjectAdmin) 
+            || (worker === currentUser) 
+            ? ("initial") 
+            : ("none"),
+        }
+
 
         return (<div className="container-form active" ref={formWorkEdit}>
             <Form className="form-work-edit" onSubmit={handleEditSubmit}>
@@ -560,6 +749,21 @@ const Home = () => {
                         })}
                     </select>
                 </div>
+
+                {Object.values(work_before).length > 0 && (
+                    <div className="work-detail">
+                        <label htmlFor="work-before">Previous work(s):</label>
+                        <div className="work-before form-control" style={{whiteSpace: "break-spaces"}}>
+                            {Object.values(work_before).map((work, index) => {
+                                if (Object.values(work_before).length === 1)
+                                    return work;
+                                else
+                                    return `${index + 1}/ ${work} \n`;
+                            })}
+                        </div>
+                    </div>
+                )}
+                
                 
                 <div className="form-row">
                     <div className="form-col">
@@ -595,42 +799,14 @@ const Home = () => {
                             className="form-control"
                             name="work-s-date"
                             ref={input_sdate}
-                            onFocus={() => {                                
-                                let value = input_sdate.current.value;
-                                input_sdate.current.type = "date";
-                                if (value) {
-                                    // console.log(parse(value, "MM/dd/yyyy", new Date()))
-                                    let display_date = value;
-                                    if (value.includes("/"))
-                                        display_date = parse(value, "MM/dd/yyyy", new Date());
-                                    else 
-                                        display_date = new Date(value)
-                                    input_sdate.current.value = format(display_date, "yyyy-MM-dd");
-                                }
-                                else {
-                                    input_sdate.current.value = value;
-                                }
-                            }}
-                            onBlur={() => {
-                                let value = input_sdate.current.value
-                                input_sdate.current.type = "text";
-                                if (value) {
-                                    let display_date = new Date(parse)
-                                    input_sdate.current.value = format(display_date, "MM/dd/yyyy");
-                                }
-                            }}
-                            value={(workSDate === null) ? ("") : (datetoTxt(workSDate))}
-                            onChange={onChangeWorkS}
-                            disabled={!isProjectAdmin && worker !== currentUser && !isWorkStarted}
-                            min={workESDate}
-                            max={max_sdate}
-                            placeholder="Havene't started"
+                            value={(workSDate === null) ? ("Havene't started") : (dateToText(workSDate))}
+                            disabled
                         />
                     </div>
                     <div className="form-col">
                         {(isWorkFinished ? (
                             <>
-                            <label htmlFor="work-f-date">Estimated finish:</label>
+                            <label htmlFor="work-f-date">Finish:</label>
                             <input
                                 type="date"
                                 className="form-control"
@@ -654,11 +830,28 @@ const Home = () => {
                         
                     </div>
                 </div>
-
-                <div className="form-row">
+                <div className="work-detail" style={displayProof}>
+                    <label htmlFor="work-proof" style={{width: "50px"}}>Proof:</label>
+                    {(content[focusProject].works[focusWork].proof === null) ? (
+                        <input 
+                            type="file" 
+                            className="work-proof form-control"
+                            onChange={onChangeFile}
+                        />
+                    ) : (
+                        <a href={file} className="work-proof form-control" download={content[focusProject].works[focusWork].proof}>Click to download</a>
+                    )
+                    }   
+                </div>
+                <div className="form-row" style={{marginTop: "10px"}}>
                     <button className="btn-work-update" onClick={handleBtnWorkEdit} style={displayBtnUpdate}>Update</button>
+                    <button className="btn-work-start" onClick={handleBtnWorkEdit} style={displayBtnStart}>Start</button>
+                    <button className="btn-work-submit" onClick={handleBtnWorkEdit} style={displayBtnSubmit}>Submit</button>
+                    <button className="btn-work-accept" onClick={handleBtnWorkEdit} style={displayBtnApprove}>Accept</button>
+                    <button className="btn-work-decline" onClick={handleBtnWorkEdit} style={displayBtnApprove}>Decline</button>
                     <button className="btn-work-cancel" onClick={handleBtnWorkEdit}>Cancel</button>
                 </div>
+                
             </Form>
         </div>
         )
@@ -737,8 +930,6 @@ const Home = () => {
         )}
     </>
 
-    
-
     useEffect(() => {
         const username = AuthService.getCurrentUser();
         if (username) {
@@ -761,12 +952,12 @@ const Home = () => {
                                 await getData(username);
                             }
                             else {
-                                alert("Session ended1.");
+                                alert("Session ended.");
                                 navigate("/login");
                             }
                         }
                         else {
-                            alert("Session ended2.");
+                            alert("Session ended.");
                             await AuthService.logout();
                             navigate("/login");
                         }
@@ -775,6 +966,7 @@ const Home = () => {
                 }
             }
             fetchData();
+            
         }
         else {
             navigate("/login")
@@ -788,11 +980,11 @@ const Home = () => {
                 Protrack
             </div>
             <div className="narbar-nav me-auto">
-                {isAdmin && (
+                {/* {isAdmin && (
                     <a href={"/admin"} className="navbar-brand">
                     Admin
                     </a>
-                )}
+                )} */}
             </div>
 
             <div className="navbar-nav rnavbar">

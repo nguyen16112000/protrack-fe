@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
 import Form  from "react-validation/build/form"
 import Input  from "react-validation/build/input"
@@ -10,6 +11,24 @@ import ProfileImg from "../avatar.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Login.css";
+toast.configure();
+
+const notify = (message, type = "info") => {
+    switch(type) {
+        case "success":
+            toast.success(message, {autoClose:1000})
+            break;
+        case "warning":
+            toast.warn(message)
+            break;
+        case "error":
+            toast.error(message)
+            break;
+        default:
+            toast.info(message)
+            break;
+    }
+}
 
 const required = value => {
     if (!value) {
@@ -53,6 +72,8 @@ const Login = () => {
                 () => {
                     // navigate("/home");
                     // window.location.reload();
+                    setLoading(false);
+                    notify("Login success");
                     setTimeout(() => {
                         navigate("/home");
                     }, 1000);
@@ -64,7 +85,8 @@ const Login = () => {
                         || error.toString();
 
                     setLoading(false);
-                    setMessage(resMessage);
+                    // setMessage(resMessage);
+                    notify(resMessage, "error")
                 }
             );
         }
@@ -75,7 +97,6 @@ const Login = () => {
 
     useEffect(() => {
         const username = AuthService.getCurrentUser();
-        console.log(username)
         if (username !== null) {
             async function refresh() {
                 if (localStorage.getItem("refresh_token")) {
@@ -157,7 +178,9 @@ const Login = () => {
                                 {loading && (
                                     <span className="spinner-border spinner-border-sm"></span>
                                 )}
-                                <span>Login</span>
+                                {!loading && (
+                                    <span>Login</span>
+                                )}
                             </button>
                         </div>
 

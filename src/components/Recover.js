@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
 import Form  from "react-validation/build/form"
 import Input  from "react-validation/build/input"
@@ -12,6 +13,23 @@ import ProfileImg from "../avatar.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Recover.css";
 
+toast.configure();
+const notify = (message, type = "info") => {
+    switch(type) {
+        case "success":
+            toast.success(message)
+            break;
+        case "warning":
+            toast.warn(message)
+            break;
+        case "error":
+            toast.error(message)
+            break;
+        default:
+            toast.info(message)
+            break;
+    }
+}
 const required = value => {
     if (!value) {
         return (
@@ -85,7 +103,8 @@ const Recover = () => {
                         resMessage = "Incorrect infomations."
 
                     setLoading(false);
-                    setMessage(resMessage);
+                    // setMessage(resMessage);
+                    notify(resMessage, "error")
                 }
             );
         }

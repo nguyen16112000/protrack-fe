@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
@@ -12,6 +13,7 @@ import ProfileImg from "../avatar.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Register.css";
 
+toast.configure()
 const required = (value) => {
     if (!value) {
         return (
@@ -48,7 +50,22 @@ const fpassword = (value) => {
     }
 };
 
-
+const notify = (message, type = "info") => {
+    switch(type) {
+        case "success":
+            toast.success(message)
+            break;
+        case "warning":
+            toast.warn(message)
+            break;
+        case "error":
+            toast.error(message)
+            break;
+        default:
+            toast.info(message)
+            break;
+    }
+}
 
 
 const Register = () => {
@@ -89,11 +106,10 @@ const Register = () => {
         if (checkBtn.current.context._errors.length === 0) {
             AuthService.register(username, password).then(
                 (response) => {
-                    setMessage(response.message);
+                    notify("Register success. Redirect to login.");
                     setSuccessful(true);
                     setTimeout(() => {
                         navigate("/login");
-                        window.location.reload();
                     }, 2000);
                     
                 },
@@ -102,7 +118,8 @@ const Register = () => {
                         (error.response && error.response.data && error.response.data.message)
                         || error.message
                         || error.toString();
-                    setMessage(resMessage);
+                    // setMessage(resMessage);
+                    notify(resMessage, "error");
                     setSuccessful(false);
                 }
             );
@@ -200,21 +217,6 @@ const Register = () => {
                                     <button className="btn-register btn-primary btn-block">Register</button>
                                 </div>
                             </>
-                        )}
-
-                        {message && (
-                            <div className="form-group">
-                                <div
-                                    className={
-                                        successful
-                                        ? "alert alert-success"
-                                        : "alert alert-danger"
-                                    }
-                                    role="alert"
-                                >
-                                    {message}
-                                </div>
-                            </div>
                         )}
 
                         <CheckButton style={{display: "none"}} ref={checkBtn} />
