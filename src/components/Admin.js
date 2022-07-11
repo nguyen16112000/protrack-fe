@@ -6,6 +6,7 @@ import AuthService from "../services/auth.service";
 import Notification from "../notification2.png"
 
 
+// need development
 const Admin = () => {
     const [content, setContent] = useState([]);
     const [currentUser, setCurrentUser] = useState("")
@@ -118,9 +119,7 @@ const Admin = () => {
                 </div>
             </nav>
             <div className="container">
-                <header className="jumbotron">
                     <h3>{content}</h3>
-                </header>
             </div>
         </>
     );

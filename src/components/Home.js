@@ -7,10 +7,12 @@ import UserService from "../services/user.service";
 
 import Form  from "react-validation/build/form"
 
-import Notification from "../notification2.png"
-import Admin from "../admin.svg"
-import Plus from "../plus.svg"
+import Notification from "../notification2.png";
+import Admin from "../admin.svg";
+import Plus from "../plus.svg";
 import Member from "../group.svg";
+import Done from "../done.svg";
+import WorkAdd from "../work_add.svg"
 
 import { format } from 'date-fns';
 
@@ -51,6 +53,7 @@ const Home = () => {
     const add_member = useRef(null);
     const calGrid = useRef(null);
     const formWorkEdit = useRef(null);
+    const formWorkAdd = useRef(null);
     const input_sdate = useRef(null);
     const navigate = useNavigate();
 
@@ -215,7 +218,7 @@ const Home = () => {
     const getDaysOfWork = (start, end) => {
         let date1 = new Date(start);
         let date2 = new Date(end);
-        return (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24) + 1;
+        return Math.floor((date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)) + 1;
     }
 
     const displayMonth = () => {
@@ -260,8 +263,10 @@ const Home = () => {
                         onClick={onClickWork}
                         style={{height: `calc(100% / ${works.length})`}}
                     >
+                    {(isWorkFinished) 
+                    ? (<img src={Done} alt="Work finished" style={{pointerEvents: "none", height: "15px", width: "15px"}}/>) 
+                    : (<img src={Done} alt="Work finished" style={{pointerEvents: "none", height: "15px", width: "15px", opacity: "0"}}/>)}
                     {work.name}
-                    {/* {(isWorkFinished) ? ("Yes") : ("No")} */}
                 </button>)
         })}
         </div>)
@@ -271,6 +276,9 @@ const Home = () => {
     const displayWorksDays = (works) => {
         let month_dates = getWeeksByMonthYear(dateNow.getMonth(), dateNow.getFullYear());
         let d_date = new Date(Date.now())
+        d_date.setHours(0);
+        d_date.setMinutes(0);
+        d_date.setSeconds(0);
         let todayInRange = (d_date.getMonth() === dateNow.getMonth() && d_date.getFullYear() === dateNow.getFullYear());
         
         return (<div className="work-days">
@@ -287,59 +295,135 @@ const Home = () => {
                 lf.setHours(0);
                 lf.setMinutes(0);
                 lf.setSeconds(0);
+                if (s !== null) {
+                    s.setHours(0);
+                    s.setMinutes(0);
+                    s.setSeconds(0);
+                }
+                if (f !== null) {
+                    f.setHours(0);
+                    f.setMinutes(0);
+                    f.setSeconds(0);
+                }
+                let ed = (f === null) ? (d_date) : (f)
+                
                 let month_start = new Date(dateNow.getFullYear(), dateNow.getMonth(), 1)
                 let month_last = new Date(dateNow.getFullYear(), dateNow.getMonth() + 1, 0)
-                if (es < month_start)
-                    es = month_start
-                if (lf > month_last)
-                    lf = month_last
-                let dow = getDaysOfWork(es, lf);
-                
 
-                for (let i = 0; i < dow; i++){
-                    occupied[es.getDate() - 1 + i] = 1;
-                    if (s === null || f === null && i <= work_time - 1)
-                        occupied[es.getDate() - 1 + i] = 2;
-                        
+                // Fill from es to lf
+                let a = new Date(es);
+                let b = new Date(lf);
+                if (es < month_start && lf >= month_start)
+                    a = month_start
+                if (lf > month_last && es <= month_last)
+                    b = month_last
+                let dow = getDaysOfWork(a, b);
+
+                if (lf < month_start || es > month_last)
+                    dow = 0;
+                
+                for (let i = 0; i < dow; i++) {
+                    occupied[a.getDate() - 1 + i] = 1;
                 }
 
-                if (s !== null && f !== null) {
-                    dow = getDaysOfWork(s, f);
-                    if (s > month_last || f < month_start)
+                // Fill from estimate start to estimate finish
+                let estimate_start = new Date((s !== null) ? (s): (es))
+                let estimate_finish = new Date(estimate_start);
+                estimate_finish.setDate(estimate_finish.getDate() + work_time - 1)
+                a = new Date(estimate_start);
+                b = new Date(estimate_finish);
+                if (estimate_start < month_start && estimate_finish >= month_start)
+                    a = month_start
+                if (estimate_finish > month_last && estimate_start <= month_last)
+                    b = month_last
+                dow = getDaysOfWork(a, b);
+
+                if (estimate_start < month_start || estimate_finish > month_last)
+                    dow = 0;
+                
+                for (let i = 0; i < dow; i++) {
+                    occupied[a.getDate() - 1 + i] = 2;
+                }
+
+                // Fill from s to f or today (ed = end_date)
+                if (s !== null) {
+                    a = new Date(s);
+                    b = new Date(ed);
+                    if (s < month_start && ed >= month_start)
+                        a = month_start
+                    if (ed > month_last && s <= month_last)
+                        b = month_last
+                    dow = getDaysOfWork(a, b);
+
+                    if (s < month_start || ed > month_last)
                         dow = 0;
-                        for (let i = 0; i < dow; i++)
-                            occupied[s.getDate() - 1 + i] = 2;
+                    
+                    for (let i = 0; i < dow; i++) {
+                        occupied[a.getDate() - 1 + i] = 3;
+                    }
+                }
+
+                // Fill from lf to f or today (ed = end_date)
+                if (s !== null && lf < ed) {
+                    a = new Date(lf);
+                    b = new Date(ed);
+                    if (lf < month_start && ed >= month_start)
+                        a = month_start
+                    if (ed > month_last && lf <= month_last)
+                        b = month_last
+                    dow = getDaysOfWork(a, b);
+
+                    if (ed < month_start || lf > month_last)
+                        dow = 0;
+                    // a !== month_start => a === lf => red from lf + 1 to ed
+                    if (a.getDate() !== 1)
+                        dow -= 1;
+                    
+                    for (let i = 0; i < dow; i++) {
+                        occupied[a.getDate() + i] = 4;
+                    }
                 }
                 
-                // if (dow > work.work_time) {
-                //     let first_half = work.work_time / dow * 100;
-                //     bgcolor = (index % 2) 
-                //     ? (`linear-gradient(90deg, blue ${first_half}%, lightblue 0%)`) 
-                //     : (`linear-gradient(90deg, yellow ${first_half}%, lightyellow 0%)`)
-                // }
-
                 return (<>
-                    {/* {dow !== 0 && (<div 
+                    {/* {sf !== 0 && (<div 
                         className="work-event"
-                        style={{gridColumn: es.getDate() + "/ span " + dow  , gridRow: index + 1, background: bgcolor}}
+                        style={{
+                            gridColumn: s.getDate() + "/ span " + sf , 
+                            gridRow: index + 1, 
+                            background: "green", 
+                            zIndex: "1"
+                        }}
                     />)} */}
                     {month_dates.map(date => {
                         let style = {gridColumn: date.date, gridRow: index + 1};
                         let title = "";
-                        if (occupied[date.date - 1] === 2) {
+                        if (occupied[date.date - 1] === 4) {
+                            style["background"] = "#bc3d3d";
+                            title = "Overdue work day"
+                        }
+                        else if (occupied[date.date - 1] === 3) {
+                            style["background"] = "#00bd00";
+                            title = "Actual work day"
+                        }
+                        else if (occupied[date.date - 1] === 2) {
                             style["background"] = (index % 2) ? ("blue") : ("yellow");
-                            title = "Work day"
+                            title = "Estimated work day"
                         }
                         else if (occupied[date.date - 1] === 1) {
                             style["background"] = (index % 2) ? ("lightblue") : ("lightyellow");
                             title = "Reserved work day"
                         }
+                        
                         if (occupied[date.date - 1] === 0 || occupied[date.date + 1 - 1] === 0){
                             style["borderRight"] = "2px solid black";
                             style["borderBottom"] = "2px solid black";
                         }   
                         else {
                             style["borderBottom"] = "2px solid black";
+                        }
+
+                        if (occupied[date.date - 1] !== occupied[date.date]) {
+                            style["borderRight"] = "2px solid black";
                         }
 
                         if (todayInRange){
@@ -350,6 +434,34 @@ const Home = () => {
                             else if (d_date.getDate() > 1 && date.date === d_date.getDate() - 1)
                                 style["borderRight"] = "2px solid red";
                         }
+
+                        // if (projectWeekend === "Sun") {
+                        //     if (date.day === 0) {
+                        //         style["background"] = "white";
+                        //         style["borderRight"] = "2px solid black";
+                        //         title = null;
+                        //     }
+                        //     else if (date.day === 6) {
+                        //         if (occupied[date.date - 1] === occupied[date.date] && occupied[date.date - 1] !== 0)
+                        //             style["borderRight"] = "2px solid black";
+                        //     }
+                        // }
+                        // else if (projectWeekend === "All") {
+                        //     if (date.day === 0) {
+                        //         style["background"] = "white";
+                        //         style["borderRight"] = "2px solid black";
+                        //         title = null;
+                        //     }
+                        //     else if (date.day === 6) {
+                        //         style["background"] = "white";
+                        //         style["borderRight"] = "2px solid black";
+                        //         title = null;
+                        //     }
+                        //     else if (date.day === 5) {
+                        //         if (occupied[date.date - 1] === occupied[date.date] && occupied[date.date - 1] !== 0)
+                        //             style["borderRight"] = "2px solid black";
+                        //     }
+                        // }
 
                         return (<div 
                             className="work-day"
@@ -463,6 +575,18 @@ const Home = () => {
         r_container.current.classList.toggle("active");
         if (formWorkEdit.current !== null)
             formWorkEdit.current.classList.toggle("active");
+    }
+
+    const onClickWorkAdd = (e) => {
+        e.preventDefault();
+        setWorkName("");
+        setWorkTime(1);
+        setWorkDetail("");
+        setWorkESDate(null);
+        setWorkLFDate(null);
+        r_container.current.classList.toggle("active");
+        if (formWorkAdd.current !== null)
+            formWorkAdd.current.classList.toggle("active");
     }
 
     const handleBtnCalendar = (e) => {
@@ -590,9 +714,9 @@ const Home = () => {
                 }
                 else {
                     if (content[focusProject].works[focusWork].user === "")
-                        notify(response.data.message + "\nWork isn't assigned to anyone.", "warning");
+                        notify(response.data.message + ".\nWork isn't assigned to anyone.", "warning");
                     else
-                    notify(response.data.message + "\nPrevious works hasn't finfished.", "warning");
+                    notify(response.data.message + ".\nPrevious works hasn't finfished.", "warning");
                 }
                     
             }
@@ -688,8 +812,8 @@ const Home = () => {
         }
         let displayProof = {
             display: 
-            (content[focusProject].works[focusWork].proof !== null && isProjectAdmin) 
-            || (worker === currentUser) 
+            (((content[focusProject].works[focusWork].proof !== null && isProjectAdmin) 
+            || (worker === currentUser)) && isWorkStarted)
             ? ("initial") 
             : ("none"),
         }
@@ -799,7 +923,7 @@ const Home = () => {
                             className="form-control"
                             name="work-s-date"
                             ref={input_sdate}
-                            value={(workSDate === null) ? ("Havene't started") : (dateToText(workSDate))}
+                            value={(workSDate === null) ? ("Haven't started") : (dateToText(workSDate))}
                             disabled
                         />
                     </div>
@@ -857,6 +981,112 @@ const Home = () => {
         )
     }
 
+    const handleBtnWorkAdd = async (e) => {
+        e.preventDefault();
+        let max_id = Math.max.apply(null, content[focusProject].works.map(work => Number(work.id.split("_")[1]))) + 1;
+        let new_id = content[focusProject].id + "_" + max_id;
+        if (e.target.className === "btn-work-add") {
+            let response = await ProjectService.updateWork(
+                content[focusProject].id,
+                new_id,
+                workName,
+                workDetail,
+                workTime,
+                workESDate,
+                workLFDate,
+                ""
+            )
+            if (response.data) {
+                notify("Work added", "success")
+                let new_work = response.data.data.work;
+                content[focusProject].works.push(new_work);
+            }
+            else {
+                notify("Error occured!", "error")
+            }
+            setTriggerRender(!triggerRender)
+        }
+        r_container.current.classList.toggle("active");
+        formWorkAdd.current.classList.toggle("active");
+    }
+    
+    const handleAddSubmit = (e) => {
+        e.preventDefault();
+        console.log(e);
+    }
+
+    const handleFormWorkAdd = () => {
+        if (focusProject === -1)
+            return <></>
+        return (<div className="container-form" ref={formWorkAdd}>
+            <Form className="form-work-add" onSubmit={handleAddSubmit}>
+                <h1>Add work:</h1>
+                <div className="work-detail">
+                    <label htmlFor="work-name">Name:</label>
+                    <textarea
+                        className="form-control"
+                        name="work-name"
+                        value={workName}
+                        onChange={onChangeWorkName}
+                    />
+                </div>
+
+                <div className="work-detail">
+                    <label htmlFor="work-description">Detail:</label>
+                    <textarea
+                        className="form-control"
+                        name="work-description"
+                        value={(workDetail !== null) ? (workDetail) : ("")}
+                        onChange={onChangeWorkDetail}
+                    />
+                </div>
+
+                <div className="work-detail">
+                    <label htmlFor="work-time">Work time:</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        name="work-time"
+                        min="1"
+                        max="100"
+                        value={workTime}
+                        onChange={onChangeWorkTime}
+                    />
+                </div>
+                
+                <div className="form-row">
+                    <div className="form-col">
+                        <label htmlFor="work-es-date">Early Start:</label>
+                        <input
+                            type="date"
+                            className="form-control"
+                            name="work-es-date"
+                            value={(workESDate !== null) ? (workESDate) : ("")}
+                            onChange={onChangeWorkES}
+                        />
+                    </div>
+                    <div className="form-col">
+                        <label htmlFor="work-lf-date">Late Finish:</label>
+                        <input
+                            type="date"
+                            className="form-control"
+                            name="work-lf-date"
+                            value={(workLFDate !== null) ? (workLFDate) : ("")}
+                            onChange={onChangeWorkLF}
+                        />
+                    </div>
+                </div>
+
+                <div className="form-row" style={{marginTop: "10px"}}>
+                    <button className="btn-work-add" onClick={handleBtnWorkAdd}>Add</button>
+                    <button className="btn-work-cancel" onClick={handleBtnWorkAdd}>Cancel</button>
+                </div>
+                
+            </Form>
+        </div>
+        )
+    }
+
     const handleLContainer = () => {
         return <>
             <div className="container-header">
@@ -890,12 +1120,12 @@ const Home = () => {
                         <h4 style={{paddingLeft: "5px"}}>{content[focusProject].name}</h4>
                     </div>
                     <div className="project-content-toolbar">
-                        {/* <img src={Member} className= "helpImg" alt="Members" onClick={onClickProjectMembers}></img> */}
+                        <img src={WorkAdd} className= "addWorkImg" alt="Add work" onClick={onClickWorkAdd} style={{display: (isProjectAdmin) ? ("initial") : ("none")}}></img>
                         <img src={Member} className= "membersImg" alt="Members" onClick={onClickProjectMembers}></img>
                     </div>
                     <div className="project-members" ref={projectMembers}>
                         <h4>Members</h4>
-                        <div className="project-members-add">
+                        <div className="project-members-add" style={{display: (isProjectAdmin) ? ("initial") : ("none")}}>
                             <input type="text" ref={add_member} />
                             <img src={Plus} className="plusImg" alt="Add member" onClick={handleBtnAddMember}></img>
                         </div>
@@ -1048,6 +1278,7 @@ const Home = () => {
                 {handleRContainer()}
             </div>
             {handleFormWorkEdit()}
+            {handleFormWorkAdd()}
         </div>
         <div className="footer">
         </div>

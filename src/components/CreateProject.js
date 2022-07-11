@@ -288,17 +288,17 @@ const CreateProject = () => {
                 Protrack
             </div>
             <div className="narbar-nav me-auto">
-                {isAdmin && (
+                {/* {isAdmin && (
                     <a href={"/admin"} className="navbar-brand">
                     Admin
                     </a>
-                )}
+                )} */}
             </div>
 
             <div className="navbar-nav rnavbar">
                 {currentUser ? (
                     <>
-                        <div className="nav-item notiIcon">
+                        {/* <div className="nav-item notiIcon">
                             <img src={Notification} className="notiImg" alt="" onClick={onClickNoti}/>
                             {unreadNoti.length > 0 && (
                                 <div className="counter">
@@ -310,7 +310,7 @@ const CreateProject = () => {
                                     {unreadNoti.map(noti => displayNoti(noti))}
                                 </div>
                             )}
-                        </div>
+                        </div> */}
                         <div className="nav-item">
                             {currentUser}
                         </div>

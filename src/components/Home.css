@@ -109,6 +109,7 @@ button:hover {
     flex-basis: 20%;
 	flex-grow: 0;
 	flex-shrink: 0;
+    padding-left: 5px;
 }
 
 .rcontainer {
@@ -226,6 +227,12 @@ button:hover {
     flex-direction: row;
     justify-content: space-between;
     position: relative;
+}
+
+.addWorkImg {
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
 }
 
 .membersImg {
@@ -383,6 +390,16 @@ button:hover {
     padding-bottom: 5px;
 }
 
+.form-work-add {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid black;
+    background-image: linear-gradient(92.88deg, #455EB5 9.16%, #5643CC 43.89%, #673FD7 64.72%);
+    padding: 10px;
+    padding-right: 0px;
+    padding-bottom: 5px;
+}
+
 .work-detail {
     display: flex;
     margin-top: 10px;
@@ -390,5 +407,9 @@ button:hover {
 }
 
 .form-work-edit label {
+    width: 200px;
+}
+
+.form-work-add label {
     width: 200px;
 }

@@ -85,9 +85,10 @@ const updateWork = async (project_id, work_id, work_name, work_detail, work_time
         params.append("name", work_name);
         params.append("detail", work_detail);
         params.append("work_time", work_time);
-        params.append("es_date", es_date.toString());
-        params.append("lf_date", lf_date.toString());
-        console.log(worker)
+        if (es_date !== null)
+            params.append("es_date", es_date.toString());
+        if (lf_date !== null)
+            params.append("lf_date", lf_date.toString());
         if (worker !== "")
             params.append("worker", worker);
         const response = await axios.put(API_URL + project_id + "/work/" + work_id, params, {headers: authHeader()})
